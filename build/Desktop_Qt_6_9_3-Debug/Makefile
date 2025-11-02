@@ -872,6 +872,8 @@ compiler_rcc_clean:
 qrc_resource.cpp: ../../resource.qrc \
 		../../../../Qt/6.9.3/gcc_64/libexec/rcc \
 		../../ShaderSource/octahedron.frag \
+		../../ShaderSource/object.frag \
+		../../ShaderSource/object.vert \
 		../../ShaderSource/light.frag \
 		../../ShaderSource/cube.vert \
 		../../ShaderSource/cube.frag \

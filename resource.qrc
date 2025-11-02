@@ -7,6 +7,8 @@
         <file>ShaderSource/octahedron.frag</file>
         <file>ShaderSource/octahedron.geom</file>
         <file>ShaderSource/octahedron.vert</file>
+        <file>ShaderSource/object.frag</file>
+        <file>ShaderSource/object.vert</file>
     </qresource>
     <qresource prefix="/pic">
         <file>Picture/wood_box.png</file>

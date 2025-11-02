@@ -30,8 +30,9 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
                                QVector3D(0.3f, 0.3f, 0.3f),
                                QVector3D(0.5f, 0.5f, 0.5f),
                                QVector3D(1.0f, 1.0f, 1.0f));
+
     QString projectRoot = QCoreApplication::applicationDirPath() + "/../..";
-    QString modelPath = projectRoot + "/ObjModels/ob.obj";
+    QString modelPath = projectRoot + "/ObjModels/ob2.obj";
     this->_object = Object(modelPath);
 
     is_draw_cube = false;
@@ -319,7 +320,7 @@ void FoxOpenGLWidget::paintGL()
         _sp_object.setUniformValue("light_color", _light.color_specular);
         _sp_object.setUniformValue("view_pos", camera_.position);
 
-        glDrawArrays(GL_TRIANGLES, 0, 9088);
+        glDrawArrays(GL_TRIANGLES, 0, _object.vertexCounts[0]);
         glBindVertexArray(0);
 
     }
