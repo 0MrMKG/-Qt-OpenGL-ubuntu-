@@ -35,7 +35,7 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
     this->_object = Object(modelPath);
 
     is_draw_cube = false;
-    is_move_cube = true;
+    is_move_cube = false;
 
     this->camera_ = Camera(QVector3D(2.5f, 1.0f, 3.0f), QVector3D(0.0f, 1.0f, 0.0f), 50.0f, -90.0f, -20.0f);
 
@@ -76,8 +76,11 @@ void FoxOpenGLWidget::initializeGL()
     glGenBuffers(NUM_VBO, VBOs);
     /****************************************************** My Object ******************************************************/
     // ------------------------ 着色器 ------------------------
-    _sp_object.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/cube.vert");
-    _sp_object.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/cube.frag");
+
+    _sp_object.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/light.vert");
+    _sp_object.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/light.frag");
+
+
     bool success = _sp_object.link();
     qDebug() << "[INFO] Sphere Shade Program _sp_object" << success;
     if (!success)
@@ -88,7 +91,32 @@ void FoxOpenGLWidget::initializeGL()
     // 绑定 VAO、VBO 对象
     glBindVertexArray(VAOs[3]);
     glBindBuffer(GL_ARRAY_BUFFER, VBOs[3]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*_object.vertices.size(), &_object.vertices[3], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*_object.vertices.size(), _object.vertices.data(), GL_STATIC_DRAW);
+
+    //将顶点数据与着色器输入变量关联起来
+    _sp_object.bind();
+    GLint aPosLocation0 = _sp_object.attributeLocation("aPos");
+    glVertexAttribPointer(aPosLocation0,     3,  GL_FLOAT,   GL_FALSE,   8 * sizeof(float),  (void*)0);
+    glEnableVertexAttribArray(aPosLocation0);
+
+    _sp_object.bind();
+    GLint aNormalLocation0 = _sp_object.attributeLocation("aNormal");
+    glVertexAttribPointer(aNormalLocation0,  3,  GL_FLOAT,   GL_FALSE,   8 * sizeof(float),  (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(aNormalLocation0);
+
+    _sp_object.bind();
+    int aTexColorLocation0 = _sp_object.attributeLocation("aTexColor");
+    glVertexAttribPointer(aTexColorLocation0,2,  GL_FLOAT,   GL_FALSE,   8 * sizeof(float),  (void*)(6*sizeof(float)));
+    glEnableVertexAttribArray(aTexColorLocation0);
+
+    _object.mat_model.setToIdentity();
+    _object.mat_model.translate(0.0f, 0.0f, 0.0f);
+
+
+    // ------------------------ 解绑 ------------------------
+    // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
+    glBindVertexArray(3);
+    glBindBuffer(GL_ARRAY_BUFFER, 3);  // 注意 VAO 不参与管理 VBO
 
 
     /****************************************************** 立方体 ******************************************************/
@@ -134,8 +162,6 @@ void FoxOpenGLWidget::initializeGL()
     _sp_cube.setUniformValue("material.specular", _indexTexPolySpecular);  // 为他绑定第二个纹理单元
 
     /*  mat_model 是QMatrix4x4直接用变换矩阵  */
-    _cube.mat_model.translate(0.6f, -1.0f, -0.2f);
-    _cube.mat_model.rotate(90, 0.0, 1.0, 0.0);
     _cube.mat_model.translate(0.834f + 0.16, -1.0f, -0.0f);
 
     // ------------------------ 解绑 ------------------------
@@ -170,16 +196,11 @@ void FoxOpenGLWidget::initializeGL()
     glEnableVertexAttribArray(aPosLocation);
 
 
-_octahedron._mat_model.translate(0.5f, 0.0f, 0.0f);
+    _octahedron._mat_model.translate(0.5f, 0.0f, 0.0f);
     // ------------------------ 解绑 ------------------------
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);  // 注意 VAO 不参与管理 VBO
-
-
-
-
-
 
 
 
@@ -247,9 +268,10 @@ void FoxOpenGLWidget::paintGL()
     mat_projection.perspective(camera_.zoom_fov, (float)width()/(float)height(), 0.1f, 100.0f);
 
 
-    /****************************************************** 立方体 ******************************************************/
+
     if (true)
     {
+/****************************************************** 立方体 ******************************************************/
         glBindVertexArray(VAOs[0]);
 
         _texPoly->bind(_indexPoly);  // 绑定纹理
@@ -274,6 +296,32 @@ void FoxOpenGLWidget::paintGL()
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
+
+    /****************************************************** Object ******************************************************/
+        glBindVertexArray(VAOs[3]);
+
+        _sp_object.bind();
+        _sp_object.setUniformValue("mat_view", mat_view);
+        _sp_object.setUniformValue("mat_projection", mat_projection);
+        _sp_object.setUniformValue("mat_model", _object.mat_model);
+
+        /* 材质颜色 */
+        _sp_object.setUniformValue("material.shininess",  32.0f);
+
+        /* 光源颜色 */
+        // _sp_object.setUniformValue("light.ambient",    _light.color_ambient);
+        // _sp_object.setUniformValue("light.diffuse",    _light.color_diffuse);
+        // _sp_object.setUniformValue("light.specular",   _light.color_specular);
+        // _sp_object.setUniformValue("light.shininess",  _light.color_shininess);
+        // _sp_object.setUniformValue("light_pos", _light.postion);
+        // _sp_object.setUniformValue("view_pos", camera_.position);
+
+        _sp_object.setUniformValue("light_color", _light.color_specular);
+        _sp_object.setUniformValue("view_pos", camera_.position);
+
+        glDrawArrays(GL_TRIANGLES, 0, 9088);
+        glBindVertexArray(0);
+
     }
 
     /****************************************************** 八面体 ******************************************************/
@@ -296,19 +344,19 @@ void FoxOpenGLWidget::paintGL()
         _sp_octahedron.setUniformValue("light.specular",   _light.color_specular);
         _sp_octahedron.setUniformValue("light.shininess",  _light.color_shininess);
 
-        if (is_rotate)
-        {
-            is_end_put_down = _octahedron.putDown(1);
-            if(!is_end_put_down) _octahedron.roleByEdge(-1);
+        // if (is_rotate)
+        // {
+        //     is_end_put_down = _octahedron.putDown(1);
+        //     if(!is_end_put_down) _octahedron.roleByEdge(-1);
 
-            if (_octahedron.ready2drop)
-            {
-                speel_drop += 0.1;
-                _cube.mat_model.translate(0.0, 0.02 * speel_drop, 0.0f);
-                _light.postion += QVector3D(0.0f, 0.02f * speel_drop, 0.0f);
-                camera_.moveCamera(Camera_Movement::UP,  0.008 * speel_drop);  // 如果摄像机不动，设置为 0.008
-            }
-        }
+        //     if (_octahedron.ready2drop)
+        //     {
+        //         speel_drop += 0.1;
+        //         _cube.mat_model.translate(0.0, 0.02 * speel_drop, 0.0f);
+        //         _light.postion += QVector3D(0.0f, 0.02f * speel_drop, 0.0f);
+        //         camera_.moveCamera(Camera_Movement::UP,  0.008 * speel_drop);  // 如果摄像机不动，设置为 0.008
+        //     }
+        // }
 
         _sp_octahedron.setUniformValue("light_pos", _light.postion);
         _sp_octahedron.setUniformValue("view_pos", camera_.position);

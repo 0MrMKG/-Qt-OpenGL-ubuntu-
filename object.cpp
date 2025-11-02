@@ -35,12 +35,16 @@ void Object::_loadModel(const QString &path)
         aiMesh* mesh = scene->mMeshes[i];
         _processMesh(mesh, scene);
     }
-    qDebug() << "[INFO] Assimp load model is done :";
+    qDebug() << "[INFO] Assimp load model is done ";
+    qDebug() << "[INFO] Mesh 顶点zu数:" << vertexCounts.size();
 }
 
 // 处理单个 Mesh，生成 vertices
 void Object::_processMesh(aiMesh* mesh, const aiScene* scene)
 {
+    unsigned int vertexCount = mesh->mNumVertices;
+    vertexCounts.push_back(vertexCount);   // 保存下来供渲染使用
+
     for (unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
         // 1. 顶点位置
@@ -74,4 +78,5 @@ void Object::_processMesh(aiMesh* mesh, const aiScene* scene)
             vertices.push_back(0.0f);
         }
     }
+    qDebug() << "[INFO] Mesh 顶点数:" << vertexCount;
 }

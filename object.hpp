@@ -18,6 +18,8 @@ public:
 
     std::vector<float> vertices;   // 顶点数据：x,y,z,nx,ny,nz,u,v
     QMatrix4x4 mat_model;          // 模型矩阵
+    std::vector<unsigned int> vertexCounts; // 保存每个mesh的顶点数量
+
 
 private:
     void _loadModel(const QString &path);

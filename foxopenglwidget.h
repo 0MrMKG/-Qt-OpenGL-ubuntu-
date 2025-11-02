@@ -80,6 +80,8 @@ private:
     /*Object*/
     Object _object;                      // OBJ 模型
     QOpenGLShaderProgram _sp_object;     // 对应 shader
+    QOpenGLTexture* _objectTex;         // 贴图
+    int _objectTexUnit;
     QOpenGLTexture* _diffuseTex;         // 漫反射贴图
     int _diffuseTexUnit;
     QOpenGLTexture* _specularTex;        // 高光贴图
