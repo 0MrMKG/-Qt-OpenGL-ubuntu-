@@ -77,11 +77,8 @@ void FoxOpenGLWidget::initializeGL()
     glGenBuffers(NUM_VBO, VBOs);
     /****************************************************** My Object ******************************************************/
     // ------------------------ 着色器 ------------------------
-
-    _sp_object.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/light.vert");
-    _sp_object.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/light.frag");
-
-
+    _sp_object.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/object.vert");
+    _sp_object.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/object.frag");
     bool success = _sp_object.link();
     qDebug() << "[INFO] Sphere Shade Program _sp_object" << success;
     if (!success)
@@ -99,12 +96,10 @@ void FoxOpenGLWidget::initializeGL()
     GLint aPosLocation0 = _sp_object.attributeLocation("aPos");
     glVertexAttribPointer(aPosLocation0,     3,  GL_FLOAT,   GL_FALSE,   8 * sizeof(float),  (void*)0);
     glEnableVertexAttribArray(aPosLocation0);
-
     _sp_object.bind();
     GLint aNormalLocation0 = _sp_object.attributeLocation("aNormal");
     glVertexAttribPointer(aNormalLocation0,  3,  GL_FLOAT,   GL_FALSE,   8 * sizeof(float),  (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(aNormalLocation0);
-
     _sp_object.bind();
     int aTexColorLocation0 = _sp_object.attributeLocation("aTexColor");
     glVertexAttribPointer(aTexColorLocation0,2,  GL_FLOAT,   GL_FALSE,   8 * sizeof(float),  (void*)(6*sizeof(float)));
@@ -113,8 +108,6 @@ void FoxOpenGLWidget::initializeGL()
     _object.mat_model.setToIdentity();
     _object.mat_model.translate(0.0f, 0.0f, 0.0f);
 
-
-    // ------------------------ 解绑 ------------------------
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
     glBindVertexArray(3);
     glBindBuffer(GL_ARRAY_BUFFER, 3);  // 注意 VAO 不参与管理 VBO
@@ -270,8 +263,6 @@ void FoxOpenGLWidget::paintGL()
 
 
 
-    if (true)
-    {
 /****************************************************** 立方体 ******************************************************/
         glBindVertexArray(VAOs[0]);
 
@@ -306,24 +297,28 @@ void FoxOpenGLWidget::paintGL()
         _sp_object.setUniformValue("mat_projection", mat_projection);
         _sp_object.setUniformValue("mat_model", _object.mat_model);
 
-        /* 材质颜色 */
-        _sp_object.setUniformValue("material.shininess",  32.0f);
 
-        /* 光源颜色 */
-        // _sp_object.setUniformValue("light.ambient",    _light.color_ambient);
-        // _sp_object.setUniformValue("light.diffuse",    _light.color_diffuse);
-        // _sp_object.setUniformValue("light.specular",   _light.color_specular);
-        // _sp_object.setUniformValue("light.shininess",  _light.color_shininess);
-        // _sp_object.setUniformValue("light_pos", _light.postion);
-        // _sp_object.setUniformValue("view_pos", camera_.position);
+        _sp_object.setUniformValue("material.ambient",  QVector3D(0.1f, 0.1f, 0.1f));
+        _sp_object.setUniformValue("material.diffuse",  QVector3D(0.5f, 0.0f, 0.0f));
+        _sp_object.setUniformValue("material.specular", QVector3D(1.0f, 1.0f, 1.0f));
+        _sp_object.setUniformValue("material.shininess", 32.0f);
 
-        _sp_object.setUniformValue("light_color", _light.color_specular);
-        _sp_object.setUniformValue("view_pos", camera_.position);
+        // 设置光源
+        _sp_object.setUniformValue("light.position", QVector3D(1.0f, 1.0f, 2.0f));
+        _sp_object.setUniformValue("light.ambient",  QVector3D(0.2f, 0.2f, 0.2f));
+        _sp_object.setUniformValue("light.diffuse",  QVector3D(0.7f, 0.7f, 0.7f));
+        _sp_object.setUniformValue("light.specular", QVector3D(1.0f, 1.0f, 1.0f));
 
+        // 设置视点和矩阵
+        _sp_object.setUniformValue("viewPos", camera_.position);
+        _sp_object.setUniformValue("mat_model", _object.mat_model);
+        _sp_object.setUniformValue("mat_view", mat_view);
+        _sp_object.setUniformValue("mat_projection", mat_projection);
+
+        // 绘制
         glDrawArrays(GL_TRIANGLES, 0, _object.vertexCounts[0]);
         glBindVertexArray(0);
 
-    }
 
     /****************************************************** 八面体 ******************************************************/
 
