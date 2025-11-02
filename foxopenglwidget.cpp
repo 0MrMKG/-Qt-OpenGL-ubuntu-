@@ -7,8 +7,10 @@
 
 #define TIMEOUT 50  // 50 毫秒更新一次
 
-const unsigned int NUM_VBO = 3;
-const unsigned int NUM_VAO = 3;
+const unsigned int numberOfObjects = 4;
+
+const unsigned int NUM_VBO = numberOfObjects;
+const unsigned int NUM_VAO = numberOfObjects;
 
 /* 创建 VAO、VBO 对象并且赋予 ID */
 unsigned int VBOs[NUM_VBO], VAOs[NUM_VAO];
@@ -21,16 +23,19 @@ float speel_drop = 1;
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
+    /* -----实例化所有模型和光源----- */
     this->_cube = Cube(2, COLOR_CUBE);
     this->_octahedron = Octahedron(OCTAHEDRON_R, 0.5, 90.0f);
     this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f),
                                QVector3D(0.3f, 0.3f, 0.3f),
                                QVector3D(0.5f, 0.5f, 0.5f),
                                QVector3D(1.0f, 1.0f, 1.0f));
-
+    QString projectRoot = QCoreApplication::applicationDirPath() + "/../..";
+    QString modelPath = projectRoot + "/ObjModels/ob.obj";
+    this->_object = Object(modelPath);
 
     is_draw_cube = false;
-    is_move_cube = false;
+    is_move_cube = true;
 
     this->camera_ = Camera(QVector3D(2.5f, 1.0f, 3.0f), QVector3D(0.0f, 1.0f, 0.0f), 50.0f, -90.0f, -20.0f);
 
@@ -69,25 +74,34 @@ void FoxOpenGLWidget::initializeGL()
     // VAO 和 VBO 对象赋予 ID
     glGenVertexArrays(NUM_VAO, VAOs);
     glGenBuffers(NUM_VBO, VBOs);
+    /****************************************************** My Object ******************************************************/
+    // ------------------------ 着色器 ------------------------
+    _sp_object.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/cube.vert");
+    _sp_object.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/cube.frag");
+    bool success = _sp_object.link();
+    qDebug() << "[INFO] Sphere Shade Program _sp_object" << success;
+    if (!success)
+    {
+        qDebug() << "[ERROR-Object] " << _sp_object.log();
+    }
 
-
-
-    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ void FoxOpenGLWidget::initializeGL() @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    // 绑定 VAO、VBO 对象
+    glBindVertexArray(VAOs[3]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[3]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*_object.vertices.size(), &_object.vertices[3], GL_STATIC_DRAW);
 
 
     /****************************************************** 立方体 ******************************************************/
     // ------------------------ 着色器 ------------------------
     _sp_cube.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/cube.vert");
     _sp_cube.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/cube.frag");
-    bool success = _sp_cube.link();
+    success = _sp_cube.link();
+
     qDebug() << "[INFO] Sphere Shade Program _sp_cube" << success;
     if (!success)
     {
          qDebug() << "[ERROR-Cube] " << _sp_cube.log();
     }
-
 
     // 绑定 VAO、VBO 对象
     glBindVertexArray(VAOs[0]);
@@ -95,6 +109,7 @@ void FoxOpenGLWidget::initializeGL()
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(float)*_cube.vertices.size(), &_cube.vertices[0], GL_STATIC_DRAW);
 
+    //将顶点数据与着色器输入变量关联起来
     _sp_cube.bind();
     GLint aPosLocation = _sp_cube.attributeLocation("aPos");
     glVertexAttribPointer(aPosLocation,     3,  GL_FLOAT,   GL_FALSE,   8 * sizeof(float),  (void*)0);
@@ -114,13 +129,13 @@ void FoxOpenGLWidget::initializeGL()
     _texPoly = new QOpenGLTexture(QImage(":/pic/Picture/poly_tex.png").mirrored());
     _indexPoly = 0;  // 设置为第 0 个纹理单元
     _sp_cube.setUniformValue("material.diffuse", _indexPoly);  // 【复习 | 重点】一个着色器内可以绑定多个纹理，只需要不同纹理对应不同的索引即可
-
     _texPolySpecular = new QOpenGLTexture(QImage(":/pic/Picture/poly_specular_map.png").mirrored());
     _indexTexPolySpecular = 1;
     _sp_cube.setUniformValue("material.specular", _indexTexPolySpecular);  // 为他绑定第二个纹理单元
 
-//    _cube.mat_model.translate(0.6f, -1.0f, -0.2f);
-    _cube.mat_model.rotate(45, 0.0, 1.0, 0.0);
+    /*  mat_model 是QMatrix4x4直接用变换矩阵  */
+    _cube.mat_model.translate(0.6f, -1.0f, -0.2f);
+    _cube.mat_model.rotate(90, 0.0, 1.0, 0.0);
     _cube.mat_model.translate(0.834f + 0.16, -1.0f, -0.0f);
 
     // ------------------------ 解绑 ------------------------

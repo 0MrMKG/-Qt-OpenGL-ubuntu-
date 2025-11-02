@@ -1,8 +1,7 @@
 #ifndef FOXOPENGLWIDGET_H
 #define FOXOPENGLWIDGET_H
 
-
-#include <QOpenGLWidget>  // 相当于GLFW
+#include <QOpenGLWidget>              // 相当于GLFW
 #include <QOpenGLFunctions_3_3_Core>  // 相当于 GLAD
 #include <QOpenGLShaderProgram>
 #include <QTimer>
@@ -12,6 +11,7 @@
 #include "cube.hpp"
 #include "light.h"
 #include "octahedron.hpp"
+#include "object.hpp"
 
 
 class FoxOpenGLWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
@@ -76,6 +76,16 @@ private:
     /* 光源 */
     Light _light;
     QOpenGLShaderProgram _sp_light;
+
+    /*Object*/
+    Object _object;                      // OBJ 模型
+    QOpenGLShaderProgram _sp_object;     // 对应 shader
+    QOpenGLTexture* _diffuseTex;         // 漫反射贴图
+    int _diffuseTexUnit;
+    QOpenGLTexture* _specularTex;        // 高光贴图
+    int _specularTexUnit;
+
+
 };
 
 #endif // FOXOPENGLWIDGET_H

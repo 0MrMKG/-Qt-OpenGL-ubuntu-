@@ -23,6 +23,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 
+# Assimp include path
+INCLUDEPATH += /usr/include/assimp
+# 链接 Assimp 库
+LIBS += -lassimp
+
+
 SOURCES += \
     light.cpp \
         main.cpp \
@@ -30,6 +36,7 @@ SOURCES += \
     foxopenglwidget.cpp \
     camera.cpp \
     cube.cpp \
+    object.cpp \
     octahedron.cpp
 
 HEADERS += \
@@ -39,6 +46,7 @@ HEADERS += \
     foxopenglwidget.h \
     camera.hpp \
     cube.hpp \
+    object.hpp \
     octahedron.hpp
 
 FORMS += \

@@ -17,7 +17,7 @@ CXX           = g++
 DEFINES       = -DQT_DEPRECATED_WARNINGS -DQT_QML_DEBUG -DQT_OPENGLWIDGETS_LIB -DQT_WIDGETS_LIB -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -g -Wall -Wextra -fPIC -D_REENTRANT $(DEFINES)
 CXXFLAGS      = -pipe -g -Wall -Wextra -fPIC -D_REENTRANT $(DEFINES)
-INCPATH       = -I../../../myShaderRenderer -I. -I../../../../Qt/6.9.3/gcc_64/include -I../../../../Qt/6.9.3/gcc_64/include/QtOpenGLWidgets -I../../../../Qt/6.9.3/gcc_64/include/QtWidgets -I../../../../Qt/6.9.3/gcc_64/include/QtOpenGL -I../../../../Qt/6.9.3/gcc_64/include/QtGui -I../../../../Qt/6.9.3/gcc_64/include/QtCore -I. -I. -I../../../../Qt/6.9.3/gcc_64/mkspecs/linux-g++
+INCPATH       = -I../../../myShaderRenderer -I. -I/usr/include/assimp -I../../../../Qt/6.9.3/gcc_64/include -I../../../../Qt/6.9.3/gcc_64/include/QtOpenGLWidgets -I../../../../Qt/6.9.3/gcc_64/include/QtWidgets -I../../../../Qt/6.9.3/gcc_64/include/QtOpenGL -I../../../../Qt/6.9.3/gcc_64/include/QtGui -I../../../../Qt/6.9.3/gcc_64/include/QtCore -I. -I. -I../../../../Qt/6.9.3/gcc_64/mkspecs/linux-g++
 QMAKE         = /home/mkg/Qt/6.9.3/gcc_64/bin/qmake
 DEL_FILE      = rm -f
 CHK_DIR_EXISTS= test -d
@@ -40,7 +40,7 @@ DISTNAME      = OpenGL_AppleSoc1.0.0
 DISTDIR = /home/mkg/Desktop/myShaderRenderer/build/Desktop_Qt_6_9_3-Debug/.tmp/OpenGL_AppleSoc1.0.0
 LINK          = g++
 LFLAGS        = -Wl,-rpath,/home/mkg/Qt/6.9.3/gcc_64/lib -Wl,-rpath-link,/home/mkg/Qt/6.9.3/gcc_64/lib
-LIBS          = $(SUBLIBS) /home/mkg/Qt/6.9.3/gcc_64/lib/libQt6OpenGLWidgets.so /home/mkg/Qt/6.9.3/gcc_64/lib/libQt6Widgets.so /home/mkg/Qt/6.9.3/gcc_64/lib/libQt6OpenGL.so /home/mkg/Qt/6.9.3/gcc_64/lib/libQt6Gui.so /home/mkg/Qt/6.9.3/gcc_64/lib/libQt6Core.so -lpthread -lGL   
+LIBS          = $(SUBLIBS) -lassimp /home/mkg/Qt/6.9.3/gcc_64/lib/libQt6OpenGLWidgets.so /home/mkg/Qt/6.9.3/gcc_64/lib/libQt6Widgets.so /home/mkg/Qt/6.9.3/gcc_64/lib/libQt6OpenGL.so /home/mkg/Qt/6.9.3/gcc_64/lib/libQt6Gui.so /home/mkg/Qt/6.9.3/gcc_64/lib/libQt6Core.so -lpthread -lGL   
 AR            = ar cqs
 RANLIB        = 
 SED           = sed
@@ -58,6 +58,7 @@ SOURCES       = ../../light.cpp \
 		../../foxopenglwidget.cpp \
 		../../camera.cpp \
 		../../cube.cpp \
+		../../object.cpp \
 		../../octahedron.cpp qrc_resource.cpp \
 		moc_mainwindow.cpp \
 		moc_foxopenglwidget.cpp
@@ -67,6 +68,7 @@ OBJECTS       = light.o \
 		foxopenglwidget.o \
 		camera.o \
 		cube.o \
+		object.o \
 		octahedron.o \
 		qrc_resource.o \
 		moc_mainwindow.o \
@@ -314,12 +316,14 @@ DIST          = /Qt/6.9.3/gcc_64/mkspecs/features/spec_pre.prf \
 		../../foxopenglwidget.h \
 		../../camera.hpp \
 		../../cube.hpp \
+		../../object.hpp \
 		../../octahedron.hpp ../../light.cpp \
 		../../main.cpp \
 		../../mainwindow.cpp \
 		../../foxopenglwidget.cpp \
 		../../camera.cpp \
 		../../cube.cpp \
+		../../object.cpp \
 		../../octahedron.cpp
 QMAKE_TARGET  = OpenGL_AppleSoc
 DESTDIR       = 
@@ -837,8 +841,8 @@ distdir: FORCE
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents ../../resource.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents ../../../../Qt/6.9.3/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../../foxmath.hpp ../../light.h ../../mainwindow.h ../../foxopenglwidget.h ../../camera.hpp ../../cube.hpp ../../octahedron.hpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../../light.cpp ../../main.cpp ../../mainwindow.cpp ../../foxopenglwidget.cpp ../../camera.cpp ../../cube.cpp ../../octahedron.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../../foxmath.hpp ../../light.h ../../mainwindow.h ../../foxopenglwidget.h ../../camera.hpp ../../cube.hpp ../../object.hpp ../../octahedron.hpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../../light.cpp ../../main.cpp ../../mainwindow.cpp ../../foxopenglwidget.cpp ../../camera.cpp ../../cube.cpp ../../object.cpp ../../octahedron.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents ../../mainwindow.ui $(DISTDIR)/
 
 
@@ -874,6 +878,7 @@ qrc_resource.cpp: ../../resource.qrc \
 		../../ShaderSource/octahedron.geom \
 		../../ShaderSource/octahedron.vert \
 		../../ShaderSource/light.vert \
+		../../ObjModels/ob.obj \
 		../../Picture/start.png \
 		../../Picture/poly_specular_map.png \
 		../../Picture/wood_box.png \
@@ -1092,7 +1097,7 @@ moc_mainwindow.cpp: ../../mainwindow.h \
 		../../../../Qt/6.9.3/gcc_64/include/QtWidgets/qtabwidget.h \
 		moc_predefs.h \
 		../../../../Qt/6.9.3/gcc_64/libexec/moc
-	/home/mkg/Qt/6.9.3/gcc_64/libexec/moc $(DEFINES) --include /home/mkg/Desktop/myShaderRenderer/build/Desktop_Qt_6_9_3-Debug/moc_predefs.h -I/home/mkg/Qt/6.9.3/gcc_64/mkspecs/linux-g++ -I/home/mkg/Desktop/myShaderRenderer -I/home/mkg/Qt/6.9.3/gcc_64/include -I/home/mkg/Qt/6.9.3/gcc_64/include/QtOpenGLWidgets -I/home/mkg/Qt/6.9.3/gcc_64/include/QtWidgets -I/home/mkg/Qt/6.9.3/gcc_64/include/QtOpenGL -I/home/mkg/Qt/6.9.3/gcc_64/include/QtGui -I/home/mkg/Qt/6.9.3/gcc_64/include/QtCore -I. -I/usr/include/c++/13 -I/usr/include/x86_64-linux-gnu/c++/13 -I/usr/include/c++/13/backward -I/usr/lib/gcc/x86_64-linux-gnu/13/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu -I/usr/include ../../mainwindow.h -o moc_mainwindow.cpp
+	/home/mkg/Qt/6.9.3/gcc_64/libexec/moc $(DEFINES) --include /home/mkg/Desktop/myShaderRenderer/build/Desktop_Qt_6_9_3-Debug/moc_predefs.h -I/home/mkg/Qt/6.9.3/gcc_64/mkspecs/linux-g++ -I/home/mkg/Desktop/myShaderRenderer -I/usr/include/assimp -I/home/mkg/Qt/6.9.3/gcc_64/include -I/home/mkg/Qt/6.9.3/gcc_64/include/QtOpenGLWidgets -I/home/mkg/Qt/6.9.3/gcc_64/include/QtWidgets -I/home/mkg/Qt/6.9.3/gcc_64/include/QtOpenGL -I/home/mkg/Qt/6.9.3/gcc_64/include/QtGui -I/home/mkg/Qt/6.9.3/gcc_64/include/QtCore -I. -I/usr/include/c++/13 -I/usr/include/x86_64-linux-gnu/c++/13 -I/usr/include/c++/13/backward -I/usr/lib/gcc/x86_64-linux-gnu/13/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu -I/usr/include ../../mainwindow.h -o moc_mainwindow.cpp
 
 moc_foxopenglwidget.cpp: ../../foxopenglwidget.h \
 		../../../../Qt/6.9.3/gcc_64/include/QtOpenGLWidgets/QOpenGLWidget \
@@ -1330,9 +1335,11 @@ moc_foxopenglwidget.cpp: ../../foxopenglwidget.h \
 		../../light.h \
 		../../../../Qt/6.9.3/gcc_64/include/QtGui/QVector3D \
 		../../octahedron.hpp \
+		../../object.hpp \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/QString \
 		moc_predefs.h \
 		../../../../Qt/6.9.3/gcc_64/libexec/moc
-	/home/mkg/Qt/6.9.3/gcc_64/libexec/moc $(DEFINES) --include /home/mkg/Desktop/myShaderRenderer/build/Desktop_Qt_6_9_3-Debug/moc_predefs.h -I/home/mkg/Qt/6.9.3/gcc_64/mkspecs/linux-g++ -I/home/mkg/Desktop/myShaderRenderer -I/home/mkg/Qt/6.9.3/gcc_64/include -I/home/mkg/Qt/6.9.3/gcc_64/include/QtOpenGLWidgets -I/home/mkg/Qt/6.9.3/gcc_64/include/QtWidgets -I/home/mkg/Qt/6.9.3/gcc_64/include/QtOpenGL -I/home/mkg/Qt/6.9.3/gcc_64/include/QtGui -I/home/mkg/Qt/6.9.3/gcc_64/include/QtCore -I. -I/usr/include/c++/13 -I/usr/include/x86_64-linux-gnu/c++/13 -I/usr/include/c++/13/backward -I/usr/lib/gcc/x86_64-linux-gnu/13/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu -I/usr/include ../../foxopenglwidget.h -o moc_foxopenglwidget.cpp
+	/home/mkg/Qt/6.9.3/gcc_64/libexec/moc $(DEFINES) --include /home/mkg/Desktop/myShaderRenderer/build/Desktop_Qt_6_9_3-Debug/moc_predefs.h -I/home/mkg/Qt/6.9.3/gcc_64/mkspecs/linux-g++ -I/home/mkg/Desktop/myShaderRenderer -I/usr/include/assimp -I/home/mkg/Qt/6.9.3/gcc_64/include -I/home/mkg/Qt/6.9.3/gcc_64/include/QtOpenGLWidgets -I/home/mkg/Qt/6.9.3/gcc_64/include/QtWidgets -I/home/mkg/Qt/6.9.3/gcc_64/include/QtOpenGL -I/home/mkg/Qt/6.9.3/gcc_64/include/QtGui -I/home/mkg/Qt/6.9.3/gcc_64/include/QtCore -I. -I/usr/include/c++/13 -I/usr/include/x86_64-linux-gnu/c++/13 -I/usr/include/c++/13/backward -I/usr/lib/gcc/x86_64-linux-gnu/13/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu -I/usr/include ../../foxopenglwidget.h -o moc_foxopenglwidget.cpp
 
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
@@ -1578,7 +1585,9 @@ ui_mainwindow.h: ../../mainwindow.ui \
 		../../cube.hpp \
 		../../light.h \
 		../../../../Qt/6.9.3/gcc_64/include/QtGui/QVector3D \
-		../../octahedron.hpp
+		../../octahedron.hpp \
+		../../object.hpp \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/QString
 	/home/mkg/Qt/6.9.3/gcc_64/libexec/uic ../../mainwindow.ui -o ui_mainwindow.h
 
 compiler_yacc_decl_make_all:
@@ -2134,7 +2143,62 @@ mainwindow.o: ../../mainwindow.cpp ../../mainwindow.h \
 		../../../../Qt/6.9.3/gcc_64/include/QtCore/qlocale.h \
 		../../../../Qt/6.9.3/gcc_64/include/QtGui/qguiapplication_platform.h \
 		../../../../Qt/6.9.3/gcc_64/include/QtWidgets/qtabwidget.h \
-		ui_mainwindow.h
+		ui_mainwindow.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/QVariant \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/QAction \
+		../../../../Qt/6.9.3/gcc_64/include/QtWidgets/QApplication \
+		../../../../Qt/6.9.3/gcc_64/include/QtWidgets/qapplication.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtWidgets/QMenu \
+		../../../../Qt/6.9.3/gcc_64/include/QtWidgets/qmenu.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtWidgets/QMenuBar \
+		../../../../Qt/6.9.3/gcc_64/include/QtWidgets/qmenubar.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtWidgets/QStatusBar \
+		../../../../Qt/6.9.3/gcc_64/include/QtWidgets/qstatusbar.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtWidgets/QToolBar \
+		../../../../Qt/6.9.3/gcc_64/include/QtWidgets/qtoolbar.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtWidgets/QWidget \
+		../../foxopenglwidget.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtOpenGLWidgets/QOpenGLWidget \
+		../../../../Qt/6.9.3/gcc_64/include/QtOpenGLWidgets/qopenglwidget.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtOpenGLWidgets/qtopenglwidgetsglobal.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtOpenGLWidgets/qtopenglwidgetsexports.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/QSurfaceFormat \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/qopengl.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/qopenglext.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtOpenGL/QOpenGLFunctions_3_3_Core \
+		../../../../Qt/6.9.3/gcc_64/include/QtOpenGL/qopenglfunctions_3_3_core.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtOpenGL/qtopenglglobal.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtOpenGL/qtopenglexports.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtOpenGL/QOpenGLVersionProfile \
+		../../../../Qt/6.9.3/gcc_64/include/QtOpenGL/qopenglversionprofile.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtOpenGL/QOpenGLVersionFunctions \
+		../../../../Qt/6.9.3/gcc_64/include/QtOpenGL/qopenglversionfunctions.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/qopenglcontext.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/qopenglcontext_platform.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtOpenGL/QOpenGLShaderProgram \
+		../../../../Qt/6.9.3/gcc_64/include/QtOpenGL/qopenglshaderprogram.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/qvector3d.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/qvector4d.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/qmatrix4x4.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/qquaternion.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/qgenericmatrix.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/QTimer \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtimer.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/QTime \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qdatetime.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qcalendar.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtOpenGL/QOpenGLTexture \
+		../../../../Qt/6.9.3/gcc_64/include/QtOpenGL/qopengltexture.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/QScopedPointer \
+		../../camera.hpp \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/QMatrix4x4 \
+		../../cube.hpp \
+		../../light.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/QVector3D \
+		../../octahedron.hpp \
+		../../object.hpp \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/QString
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o ../../mainwindow.cpp
 
 foxopenglwidget.o: ../../foxopenglwidget.cpp ../../../../Qt/6.9.3/gcc_64/include/QtCore/QDebug \
@@ -2374,7 +2438,9 @@ foxopenglwidget.o: ../../foxopenglwidget.cpp ../../../../Qt/6.9.3/gcc_64/include
 		../../cube.hpp \
 		../../light.h \
 		../../../../Qt/6.9.3/gcc_64/include/QtGui/QVector3D \
-		../../octahedron.hpp
+		../../octahedron.hpp \
+		../../object.hpp \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/QString
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o foxopenglwidget.o ../../foxopenglwidget.cpp
 
 camera.o: ../../camera.cpp ../../camera.hpp \
@@ -2636,6 +2702,139 @@ cube.o: ../../cube.cpp ../../cube.hpp \
 		../../../../Qt/6.9.3/gcc_64/include/QtCore/qhash.h \
 		../../../../Qt/6.9.3/gcc_64/include/QtCore/qvarlengtharray.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o cube.o ../../cube.cpp
+
+object.o: ../../object.cpp ../../object.hpp \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/QString \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qstring.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qchar.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qglobal.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtcoreglobal.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtversionchecks.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtconfiginclude.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qconfig.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtcore-config.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtconfigmacros.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtdeprecationdefinitions.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qcompilerdetection.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qprocessordetection.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qsystemdetection.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtcoreexports.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtdeprecationmarkers.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtclasshelpermacros.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtpreprocessorsupport.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qassert.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtnoop.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtypes.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtversion.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtypeinfo.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qcontainerfwd.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qsysinfo.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qlogging.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qflags.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qcompare_impl.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qatomic.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qbasicatomic.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qatomic_cxx11.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qgenericatomic.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qyieldcpu.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qconstructormacros.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qdarwinhelpers.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qexceptionhandling.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qforeach.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qttypetraits.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qfunctionpointer.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qglobalstatic.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qmalloc.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qminmax.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qnumeric.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qoverload.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qswap.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtenvironmentvariables.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtresource.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qttranslation.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qversiontagging.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qcompare.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qstdlibdetection.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qcomparehelpers.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/q20type_traits.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qstringview.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qbytearray.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qrefcount.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qnamespace.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtmetamacros.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qarraydata.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qpair.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qarraydatapointer.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qarraydataops.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qcontainertools_impl.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qxptype_traits.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/q20functional.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/q20memory.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/q17memory.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qbytearrayalgorithms.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qbytearrayview.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qstringfwd.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qstringliteral.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qstringalgorithms.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qlatin1stringview.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qanystringview.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qutf8stringview.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qstringtokenizer.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qstringbuilder.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qstringconverter.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qstringconverter_base.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/QVector3D \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/qvectornd.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/qtguiglobal.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/qtgui-config.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/qtguiexports.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qpoint.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/q23utility.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/q20utility.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qrect.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qhashfunctions.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qmargins.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qsize.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qmath.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qalgorithms.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/QMatrix4x4 \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/qmatrix4x4.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/qvector3d.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/qvector4d.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/qquaternion.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtGui/qgenericmatrix.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qmetatype.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qdatastream.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qscopedpointer.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qiodevicebase.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qfloat16.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtformat_impl.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qiterable.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qmetacontainer.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qcontainerinfo.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtaggedpointer.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qobjectdefs.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qobjectdefs_impl.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qfunctionaltools_impl.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qscopeguard.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qdebug.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qtextstream.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qcontiguouscache.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qsharedpointer.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qshareddata.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qsharedpointer_impl.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qlist.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qiterator.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qbytearraylist.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qstringlist.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qstringmatcher.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qmap.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qshareddata_impl.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qset.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qhash.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/qvarlengtharray.h \
+		../../../../Qt/6.9.3/gcc_64/include/QtCore/QDebug
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o object.o ../../object.cpp
 
 octahedron.o: ../../octahedron.cpp ../../octahedron.hpp \
 		../../../../Qt/6.9.3/gcc_64/include/QtGui/QMatrix4x4 \

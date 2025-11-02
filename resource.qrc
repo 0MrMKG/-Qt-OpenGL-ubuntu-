@@ -16,4 +16,7 @@
         <file>Picture/light.png</file>
         <file>Picture/start.png</file>
     </qresource>
+    <qresource prefix="/Object">
+        <file>ObjModels/ob.obj</file>
+    </qresource>
 </RCC>
